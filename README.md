@@ -1,101 +1,103 @@
-# Overleaf MCP Server
+# LaTeX MCP Server
 
-This is a Model Context Protocol (MCP) server that provides integration with Overleaf projects, allowing AI assistants to interact with your LaTeX documents.
+A Model Context Protocol (MCP) server for AI-assisted LaTeX editing. Works with **any local LaTeX project** or syncs with Overleaf (Premium).
 
-**Instead of copy-pasting between ChatGPT and Overleaf, the AI directly edits your document and pushes changes to your project.**
+**Instead of copy-pasting between ChatGPT and your editor, the AI directly reads and edits your LaTeX documents.**
 
-## Why Use This?
+## Quick Start
+
+```bash
+# Clone
+git clone https://github.com/younesbensafia/overleaf-mcp-server.git
+cd overleaf-mcp-server
+
+# Install
+uv sync
+
+# Run (point to your LaTeX project)
+PROJECT_PATH=/path/to/your/thesis PYTHONPATH=. uv run src/main.py
+```
+
+## Who Is This For?
 
 | User | Use Case |
 |------|----------|
-| PhD students | Thesis writing with AI assistance |
-| Researchers | Quick paper drafting and editing |
-| Developers | Automating LaTeX documentation |
-| Teams | Collaborative editing via AI |
-
-### Example Workflow
-```
-You: "Read my main.tex and suggest improvements to the introduction"
-Claude: [calls read_latex_file] → reads content → gives feedback
-
-You: "Add a new section about neural networks after the introduction"  
-Claude: [calls read_latex_file, then write_latex_file] → inserts the section
-
-You: "Compile and check for errors"
-Claude: [calls compile_latex] → sees errors → [calls write_latex_file] → fixes them
-```
+| PhD students | AI helps write/edit thesis chapters |
+| Researchers | Quick paper drafting and error fixing |
+| Students | Homework and assignments |
+| Anyone | Any LaTeX document |
 
 ## Features
 
-- **Fetch Project Files**: List all files within an Overleaf project.
-- **Read LaTeX Files**: Retrieve the content of specific `.tex` files.
-- **Write LaTeX Files**: Update or create files in your project.
-- **LaTeX Parsing**: Extract sections and equations from LaTeX documents (powered by `pylatexenc`).
-- **Trigger Compilation**: Compile and get error logs for automated fixing.
-- **Mock Mode**: Test locally without an Overleaf premium account.
+- **List Files** - See all files in your project
+- **Read Files** - AI reads your `.tex` content
+- **Write Files** - AI creates or edits files
+- **Compile** - Run `pdflatex` and get errors
+- **Get Outline** - Extract sections/chapters structure
 
-## Setup
+## Modes
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/younesbensafia/overleaf-mcp-server.git
-   cd overleaf-mcp-server
-   ```
-
-2. **Configure Environment Variables**:
-   Create a `.env` file in the root directory:
-   ```env
-   OVERLEAF_TOKEN=your_git_token_here
-   PROJECT_ID=your_project_id
-   MOCK_MODE=false
-   ```
-   
-   > **Note**: Git integration requires an Overleaf premium account. Set `MOCK_MODE=true` for local testing.
-
-3. **Install Dependencies**:
-   ```bash
-   uv sync
-   ```
-
-## Usage
-
-Run the server via stdio:
-```bash
-PYTHONPATH=. uv run src/main.py
+### Local Mode (Default) - Works for Everyone
+```env
+MODE=local
+PROJECT_PATH=/home/user/my_thesis
 ```
 
-### Mock Mode (for testing without premium)
-```bash
-MOCK_MODE=true PYTHONPATH=. uv run src/main.py
+### Overleaf Mode (Optional) - Requires Premium
+```env
+MODE=overleaf
+OVERLEAF_TOKEN=your_git_token
+PROJECT_ID=your_project_id
 ```
 
-## Tools Provided
+## Example Workflow
 
-- `fetch_project_files(project_id)` - List all files in a project
-- `read_latex_file(project_id, file_path)` - Read file content
-- `write_latex_file(project_id, file_path, content)` - Update or create files
-- `compile_latex(project_id)` - Compile and get status/errors
-- `get_errors(project_id)` - Get compilation errors for fixing
+```
+You: "Read main.tex and improve the introduction"
+AI: [calls read_file] → reads content → suggests changes
 
-## Claude Desktop Configuration
+You: "Add a new section about neural networks"
+AI: [calls write_file] → adds the section
 
-Add this to your `claude_desktop_config.json`:
+You: "Compile and check for errors"
+AI: [calls compile] → sees errors → [calls write_file] → fixes them
+```
+
+## Claude Desktop Setup
+
+Add to `~/.config/Claude/claude_desktop_config.json`:
+
 ```json
 {
   "mcpServers": {
-    "overleaf": {
+    "latex": {
       "command": "uv",
       "args": ["--directory", "/path/to/overleaf-mcp-server", "run", "src/main.py"],
       "env": {
         "PYTHONPATH": ".",
-        "OVERLEAF_TOKEN": "your_token",
-        "PROJECT_ID": "your_project_id"
+        "PROJECT_PATH": "/path/to/your/latex/project"
       }
     }
   }
 }
 ```
 
+## Tools
+
+| Tool | Description |
+|------|-------------|
+| `list_files` | List all files in project |
+| `read_file` | Read file content |
+| `write_file` | Create or update file |
+| `compile` | Run pdflatex, return errors |
+| `get_outline` | Get document structure |
+
+## Requirements
+
+- Python 3.10+
+- `uv` package manager
+- `pdflatex` (for compilation) - `sudo apt install texlive-latex-base`
+
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT - See [LICENSE](LICENSE)
