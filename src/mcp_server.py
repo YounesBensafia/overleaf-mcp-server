@@ -1,113 +1,140 @@
 import asyncio
+import json
 from mcp.server import Server
 import mcp.types as types
-from src.overleaf_client import OverleafClient
+from src.latex_client import LaTeXClient
 
-client = OverleafClient()
-server = Server("overleaf-mcp-server")
+client = LaTeXClient()
+server = Server("latex-mcp-server")
+
 
 @server.list_tools()
 async def list_tools() -> list[types.Tool]:
     return [
         types.Tool(
-            name="fetch_project_files",
-            description="Fetch list of files from an Overleaf project",
+            name="list_files",
+            description="List all files in the LaTeX project",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "project_id": {"type": "string", "description": "The Overleaf project ID"}
+                    "project_id": {
+                        "type": "string",
+                        "description": "Overleaf project ID (only needed in overleaf mode)"
+                    }
                 },
-                "required": ["project_id"]
+                "required": []
             }
         ),
         types.Tool(
-            name="read_latex_file",
-            description="Read the content of a LaTeX file in an Overleaf project",
+            name="read_file",
+            description="Read the content of a file in the LaTeX project",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "project_id": {"type": "string", "description": "The Overleaf project ID"},
-                    "file_path": {"type": "string", "description": "Path to the file relative to project root"}
+                    "file_path": {
+                        "type": "string",
+                        "description": "Path to the file (e.g., 'main.tex', 'chapters/intro.tex')"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "description": "Overleaf project ID (only needed in overleaf mode)"
+                    }
                 },
-                "required": ["project_id", "file_path"]
+                "required": ["file_path"]
             }
         ),
         types.Tool(
-            name="compile_latex",
-            description="Trigger compilation for an Overleaf project and return compilation result status and errors",
+            name="write_file",
+            description="Create or update a file in the LaTeX project",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "project_id": {"type": "string", "description": "The Overleaf project ID"}
+                    "file_path": {
+                        "type": "string",
+                        "description": "Path to the file (e.g., 'main.tex', 'chapters/intro.tex')"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Content to write to the file"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "description": "Overleaf project ID (only needed in overleaf mode)"
+                    }
                 },
-                "required": ["project_id"]
+                "required": ["file_path", "content"]
             }
         ),
         types.Tool(
-            name="get_errors",
-            description="Get the list of errors from the last compilation for a project",
+            name="compile",
+            description="Compile the LaTeX project and return status/errors",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "project_id": {"type": "string", "description": "The Overleaf project ID"}
+                    "main_file": {
+                        "type": "string",
+                        "description": "Main .tex file to compile (default: main.tex)"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "description": "Overleaf project ID (only needed in overleaf mode)"
+                    }
                 },
-                "required": ["project_id"]
+                "required": []
             }
         ),
         types.Tool(
-            name="write_latex_file",
-            description="Update the content of a LaTeX file in an Overleaf project",
+            name="get_outline",
+            description="Get the document structure (sections, chapters, etc.)",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "project_id": {"type": "string", "description": "The Overleaf project ID"},
-                    "file_path": {"type": "string", "description": "Path to the file relative to project root"},
-                    "content": {"type": "string", "description": "New content for the file"}
+                    "project_id": {
+                        "type": "string",
+                        "description": "Overleaf project ID (only needed in overleaf mode)"
+                    }
                 },
-                "required": ["project_id", "file_path", "content"]
+                "required": []
             }
         )
     ]
 
+
 @server.call_tool()
 async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
-    if name == "fetch_project_files":
-        project_id = arguments["project_id"]
-        files = client.fetch_project_files(project_id)
-        return [types.TextContent(type="text", text=str(files))]
+    project_id = arguments.get("project_id")
     
-    elif name == "read_latex_file":
-        project_id = arguments["project_id"]
-        file_path = arguments["file_path"]
-        content = client.read_file(project_id, file_path)
-        return [types.TextContent(type="text", text=content)]
-
-    elif name == "write_latex_file":
-        project_id = arguments["project_id"]
-        file_path = arguments["file_path"]
-        content = arguments["content"]
-        success = client.write_file(project_id, file_path, content)
-        if success:
-            return [types.TextContent(type="text", text=f"Successfully updated {file_path}")]
+    try:
+        if name == "list_files":
+            files = client.list_files(project_id)
+            return [types.TextContent(type="text", text=json.dumps(files, indent=2))]
+        
+        elif name == "read_file":
+            file_path = arguments["file_path"]
+            content = client.read_file(file_path, project_id)
+            return [types.TextContent(type="text", text=content)]
+        
+        elif name == "write_file":
+            file_path = arguments["file_path"]
+            content = arguments["content"]
+            result = client.write_file(file_path, content, project_id)
+            return [types.TextContent(type="text", text=result)]
+        
+        elif name == "compile":
+            main_file = arguments.get("main_file", "main.tex")
+            result = client.compile_latex(main_file, project_id)
+            return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
+        
+        elif name == "get_outline":
+            outline = client.get_project_outline(project_id)
+            return [types.TextContent(type="text", text=json.dumps(outline, indent=2))]
+        
         else:
-            return [types.TextContent(type="text", text=f"Failed to update {file_path}")]
+            raise ValueError(f"Unknown tool: {name}")
+            
+    except Exception as e:
+        return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
-    elif name == "compile_latex":
-        project_id = arguments["project_id"]
-        result = client.compile_project(project_id)
-        # Return structured info for the AI to fix errors
-        import json
-        return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-
-    elif name == "get_errors":
-        project_id = arguments["project_id"]
-        result = client.get_compilation_logs(project_id)
-        # Extract only errors for clarity
-        errors = result.get("errors", [])
-        return [types.TextContent(type="text", text=f"Found {len(errors)} errors.\n{json.dumps(errors, indent=2)}")]
-    
-    else:
-        raise ValueError(f"Unknown tool: {name}")
 
 async def run_server():
     from mcp.server.stdio import stdio_server
