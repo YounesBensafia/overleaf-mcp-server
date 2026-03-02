@@ -1,20 +1,24 @@
 import asyncio
 import json
 import os
+from dotenv import load_dotenv
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
+
+# Load .env file BEFORE checking env vars
+load_dotenv()
 
 async def test_overleaf_mcp():
     # Configure server parameters
     # Assumes the server is in src/main.py and PYTHONPATH is set to workspace root
+    # Use MOCK_MODE for local testing without Overleaf premium
     server_params = StdioServerParameters(
         command="uv",
         args=["run", "src/main.py"],
         env={
             **os.environ,
             "PYTHONPATH": ".",
-            "OVERLEAF_TOKEN": os.getenv("OVERLEAF_TOKEN", "test_token"),
-            "PROJECT_ID": os.getenv("PROJECT_ID", "test_project")
+            "MOCK_MODE": os.getenv("MOCK_MODE", "true"),  # Default to mock mode for testing
         }
     )
 
