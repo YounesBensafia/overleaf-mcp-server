@@ -1,20 +1,15 @@
 import asyncio
 from mcp.server import Server
-from mcp.server.models import (
-    Tool,
-    ToolCall,
-    ToolResponse,
-    ToolResult,
-)
+import mcp.types as types
 from src.overleaf_client import OverleafClient
 
 client = OverleafClient()
 server = Server("overleaf-mcp-server")
 
 @server.list_tools()
-async def list_tools() -> list[Tool]:
+async def list_tools() -> list[types.Tool]:
     return [
-        Tool(
+        types.Tool(
             name="fetch_project_files",
             description="Fetch list of files from an Overleaf project",
             inputSchema={
@@ -25,7 +20,7 @@ async def list_tools() -> list[Tool]:
                 "required": ["project_id"]
             }
         ),
-        Tool(
+        types.Tool(
             name="read_latex_file",
             description="Read the content of a LaTeX file in an Overleaf project",
             inputSchema={
@@ -37,7 +32,7 @@ async def list_tools() -> list[Tool]:
                 "required": ["project_id", "file_path"]
             }
         ),
-        Tool(
+        types.Tool(
             name="compile_latex",
             description="Trigger compilation for an Overleaf project",
             inputSchema={
@@ -51,22 +46,22 @@ async def list_tools() -> list[Tool]:
     ]
 
 @server.call_tool()
-async def call_tool(name: str, arguments: dict) -> ToolResponse:
+async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
     if name == "fetch_project_files":
         project_id = arguments["project_id"]
         files = client.fetch_project_files(project_id)
-        return ToolResponse(content=[ToolResult(text=str(files))])
+        return [types.TextContent(type="text", text=str(files))]
     
     elif name == "read_latex_file":
         project_id = arguments["project_id"]
         file_path = arguments["file_path"]
         content = client.read_file(project_id, file_path)
-        return ToolResponse(content=[ToolResult(text=content)])
+        return [types.TextContent(type="text", text=content)]
 
     elif name == "compile_latex":
         project_id = arguments["project_id"]
         status = client.compile_project(project_id)
-        return ToolResponse(content=[ToolResult(text=f"Compilation result: {status}")])
+        return [types.TextContent(type="text", text=f"Compilation result: {status}")]
     
     else:
         raise ValueError(f"Unknown tool: {name}")
