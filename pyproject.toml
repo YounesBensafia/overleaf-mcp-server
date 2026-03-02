@@ -1,22 +1,13 @@
 [project]
 name = "overleaf-mcp-server"
 version = "0.1.0"
-description = "Model Context Protocol (MCP) server for interacting with Overleaf projects"
-authors = [
-    { name = "Your Name", email = "your.email@example.com" }
-]
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
 dependencies = [
-    "mcp[cli]>=1.0.0",
-    "requests>=2.31.0",
+    "mcp>=1.26.0",
+    "pydantic>=2.12.5",
     "pylatexenc>=2.10",
-    "python-dotenv>=1.0.0",
-    "pydantic>=2.0.0"
+    "python-dotenv>=1.2.2",
+    "requests>=2.32.5",
 ]
-requires-python = ">=3.10"
-
-[project.scripts]
-overleaf-mcp = "overleaf_mcp_server.main:main"
-
-[build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
