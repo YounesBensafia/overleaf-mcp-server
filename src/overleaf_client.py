@@ -25,10 +25,18 @@ class OverleafClient:
         repo_path = self._get_repo_path(project_id)
         if not os.path.exists(os.path.join(repo_path, ".git")):
             print(f"Cloning project {project_id}...")
-            git.Repo.clone_from(self._get_git_url(project_id), repo_path)
+            repo = git.Repo.clone_from(self._get_git_url(project_id), repo_path)
+            # Ensure refspec is set to avoid "no refspec set" errors on pull
+            repo.git.config('--add', 'remote.origin.fetch', '+refs/heads/*:refs/heads/*')
         else:
             print(f"Pulling latest changes for {project_id}...")
             repo = git.Repo(repo_path)
+            # Fix refspec if it was missing from a previous failed run
+            try:
+                repo.git.config('remote.origin.fetch')
+            except git.GitCommandError:
+                repo.git.config('--add', 'remote.origin.fetch', '+refs/heads/*:refs/heads/*')
+            
             repo.remotes.origin.pull()
         return repo_path
 
@@ -69,6 +77,27 @@ class OverleafClient:
         return True
 
     def compile_project(self, project_id: str):
-        # Triggering compilation via API might still require a different token or web session bit
-        # This remains a placeholder for real API integration as Git doesn't handle compilation
-        return "Compilation triggered (mock)"
+        # Triggering compilation via API
+        # In real usage, this would be: 
+        # response = self.session.post(f"{self.base_url}/project/{project_id}/compile")
+        # return response.json()
+        
+        # Adding a simulation of a compilation failure and log fetching
+        # To actually get logs, in real usage, you'd fetch the output.log from the build artifacts
+        return {
+            "status": "error",
+            "errors": [
+                {
+                    "line": 42,
+                    "file": "main.tex",
+                    "message": "Undefined control sequence \\textbf{unmatched",
+                    "type": "error"
+                }
+            ],
+            "log": "... This is a simulated log output ... ! Undefined control sequence. l.42 \\textbf{unmatched ..."
+        }
+
+    def get_compilation_logs(self, project_id: str):
+        # Real implementation would fetch the last build artifacts from Overleaf
+        # For now, providing a mock to enable the "Automated Error Correction" tool
+        return self.compile_project(project_id)

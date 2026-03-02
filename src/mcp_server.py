@@ -83,8 +83,17 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
 
     elif name == "compile_latex":
         project_id = arguments["project_id"]
-        status = client.compile_project(project_id)
-        return [types.TextContent(type="text", text=f"Compilation result: {status}")]
+        result = client.compile_project(project_id)
+        # Return structured info for the AI to fix errors
+        import json
+        return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
+
+    elif name == "get_errors":
+        project_id = arguments["project_id"]
+        result = client.get_compilation_logs(project_id)
+        # Extract only errors for clarity
+        errors = result.get("errors", [])
+        return [types.TextContent(type="text", text=f"Found {len(errors)} errors.\n{json.dumps(errors, indent=2)}")]
     
     else:
         raise ValueError(f"Unknown tool: {name}")
