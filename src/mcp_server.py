@@ -42,6 +42,19 @@ async def list_tools() -> list[types.Tool]:
                 },
                 "required": ["project_id"]
             }
+        ),
+        types.Tool(
+            name="write_latex_file",
+            description="Update the content of a LaTeX file in an Overleaf project",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_id": {"type": "string", "description": "The Overleaf project ID"},
+                    "file_path": {"type": "string", "description": "Path to the file relative to project root"},
+                    "content": {"type": "string", "description": "New content for the file"}
+                },
+                "required": ["project_id", "file_path", "content"]
+            }
         )
     ]
 
@@ -57,6 +70,16 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
         file_path = arguments["file_path"]
         content = client.read_file(project_id, file_path)
         return [types.TextContent(type="text", text=content)]
+
+    elif name == "write_latex_file":
+        project_id = arguments["project_id"]
+        file_path = arguments["file_path"]
+        content = arguments["content"]
+        success = client.write_file(project_id, file_path, content)
+        if success:
+            return [types.TextContent(type="text", text=f"Successfully updated {file_path}")]
+        else:
+            return [types.TextContent(type="text", text=f"Failed to update {file_path}")]
 
     elif name == "compile_latex":
         project_id = arguments["project_id"]
