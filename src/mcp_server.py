@@ -34,7 +34,18 @@ async def list_tools() -> list[types.Tool]:
         ),
         types.Tool(
             name="compile_latex",
-            description="Trigger compilation for an Overleaf project",
+            description="Trigger compilation for an Overleaf project and return compilation result status and errors",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "project_id": {"type": "string", "description": "The Overleaf project ID"}
+                },
+                "required": ["project_id"]
+            }
+        ),
+        types.Tool(
+            name="get_errors",
+            description="Get the list of errors from the last compilation for a project",
             inputSchema={
                 "type": "object",
                 "properties": {
