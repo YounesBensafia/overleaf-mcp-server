@@ -2,10 +2,10 @@ import asyncio
 import json
 from mcp.server import Server
 import mcp.types as types
-from src.latex_client import LaTeXClient
+from src.overleaf_client import OverleafClient
 
-client = LaTeXClient()
-server = Server("latex-mcp-server")
+client = OverleafClient()
+server = Server("overleaf-mcp-server")
 
 
 @server.list_tools()
@@ -13,13 +13,13 @@ async def list_tools() -> list[types.Tool]:
     return [
         types.Tool(
             name="list_files",
-            description="List all files in the LaTeX project",
+            description="List all files in the Overleaf project",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "project_id": {
                         "type": "string",
-                        "description": "Overleaf project ID (only needed in overleaf mode)"
+                        "description": "Overleaf project ID (optional if PROJECT_ID is configured)"
                     }
                 },
                 "required": []
@@ -27,17 +27,17 @@ async def list_tools() -> list[types.Tool]:
         ),
         types.Tool(
             name="read_file",
-            description="Read the content of a file in the LaTeX project",
+            description="Read the content of a file in the Overleaf project",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "file_path": {
                         "type": "string",
-                        "description": "Path to the file (e.g., 'main.tex', 'chapters/intro.tex')"
+                        "description": "Path to the file in the Overleaf project"
                     },
                     "project_id": {
                         "type": "string",
-                        "description": "Overleaf project ID (only needed in overleaf mode)"
+                        "description": "Overleaf project ID (optional if PROJECT_ID is configured)"
                     }
                 },
                 "required": ["file_path"]
@@ -45,13 +45,13 @@ async def list_tools() -> list[types.Tool]:
         ),
         types.Tool(
             name="write_file",
-            description="Create or update a file in the LaTeX project",
+            description="Create or update a file in the Overleaf project",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "file_path": {
                         "type": "string",
-                        "description": "Path to the file (e.g., 'main.tex', 'chapters/intro.tex')"
+                        "description": "Path to the file in the Overleaf project"
                     },
                     "content": {
                         "type": "string",
@@ -59,39 +59,21 @@ async def list_tools() -> list[types.Tool]:
                     },
                     "project_id": {
                         "type": "string",
-                        "description": "Overleaf project ID (only needed in overleaf mode)"
+                        "description": "Overleaf project ID (optional if PROJECT_ID is configured)"
                     }
                 },
                 "required": ["file_path", "content"]
             }
         ),
         types.Tool(
-            name="compile",
-            description="Compile the LaTeX project and return status/errors",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "main_file": {
-                        "type": "string",
-                        "description": "Main .tex file to compile (default: main.tex)"
-                    },
-                    "project_id": {
-                        "type": "string",
-                        "description": "Overleaf project ID (only needed in overleaf mode)"
-                    }
-                },
-                "required": []
-            }
-        ),
-        types.Tool(
-            name="get_outline",
-            description="Get the document structure (sections, chapters, etc.)",
+            name="sync_project",
+            description="Pull latest changes from Overleaf",
             inputSchema={
                 "type": "object",
                 "properties": {
                     "project_id": {
                         "type": "string",
-                        "description": "Overleaf project ID (only needed in overleaf mode)"
+                        "description": "Overleaf project ID (optional if PROJECT_ID is configured)"
                     }
                 },
                 "required": []
@@ -120,14 +102,9 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
             result = client.write_file(file_path, content, project_id)
             return [types.TextContent(type="text", text=result)]
         
-        elif name == "compile":
-            main_file = arguments.get("main_file", "main.tex")
-            result = client.compile_latex(main_file, project_id)
-            return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
-        
-        elif name == "get_outline":
-            outline = client.get_project_outline(project_id)
-            return [types.TextContent(type="text", text=json.dumps(outline, indent=2))]
+        elif name == "sync_project":
+            project_path = client.ensure_repo(project_id)
+            return [types.TextContent(type="text", text=f"Synchronized Overleaf project at: {project_path}")]
         
         else:
             raise ValueError(f"Unknown tool: {name}")
