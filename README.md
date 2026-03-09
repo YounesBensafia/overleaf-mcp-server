@@ -10,11 +10,11 @@ cd overleaf-mcp-server
 
 uv sync
 
-# Required environment
-OVERLEAF_TOKEN=your_git_token \
-PROJECT_ID=your_project_id \
-PYTHONPATH=. \
-uv run src/main.py
+# Configure environment
+cp .env.example .env
+# then edit .env with your token/project id
+
+PYTHONPATH=. uv run src/main.py
 ```
 
 ## Environment
@@ -64,7 +64,7 @@ Add to `~/.config/Claude/claude_desktop_config.json`:
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.13+
 - `uv` package manager
 
 ## License
