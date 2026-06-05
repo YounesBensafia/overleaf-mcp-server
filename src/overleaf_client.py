@@ -4,8 +4,6 @@ from config.config import config
 
 
 class OverleafClient:
-    """Overleaf project client using Git sync."""
-
     def __init__(self):
         self.repo_dir = config.repo_dir
         os.makedirs(self.repo_dir, exist_ok=True)
@@ -22,21 +20,19 @@ class OverleafClient:
     def _get_git_url(self, project_id: str) -> str:
         if not config.token:
             raise ValueError("OVERLEAF_TOKEN is required")
-        return f"https://git:{config.token}@git.overleaf.com/{project_id}"
+        return f"https://git:{config.token}@{config.base_url}/{project_id}"
 
     def ensure_repo(self, project_id: str | None = None) -> str:
-        """Clone or pull an Overleaf repo and return the local path."""
         resolved_project_id = self._resolve_project_id(project_id)
         repo_path = self._get_project_path(resolved_project_id)
 
         if not os.path.exists(os.path.join(repo_path, ".git")):
             repo = git.Repo.clone_from(self._get_git_url(resolved_project_id), repo_path)
-            repo.git.config("--add", "remote.origin.fetch", "+refs/heads/*:refs/heads/*")
+            repo.git.config("remote.origin.fetch", "+refs/heads/*:refs/heads/*")
         else:
             repo = git.Repo(repo_path)
-            try:
-                repo.git.config("remote.origin.fetch")
-            except git.GitCommandError:
+            existing = repo.git.config("--get-all", "remote.origin.fetch").strip()
+            if "+refs/heads/*:refs/heads/*" not in existing:
                 repo.git.config("--add", "remote.origin.fetch", "+refs/heads/*:refs/heads/*")
             repo.remotes.origin.pull()
 
@@ -46,16 +42,22 @@ class OverleafClient:
         project_path = self.ensure_repo(project_id)
         files = []
         for root, _, filenames in os.walk(project_path):
-            if any(part.startswith(".") for part in root.split(os.sep)):
+            rel_root = os.path.relpath(root, project_path)
+            if any(part.startswith(".") for part in rel_root.split(os.sep)):
                 continue
             for filename in filenames:
+                if filename.startswith("."):
+                    continue
                 rel_path = os.path.relpath(os.path.join(root, filename), project_path)
                 files.append(rel_path)
         return files
 
     def read_file(self, file_path: str, project_id: str | None = None) -> str:
         project_path = self.ensure_repo(project_id)
-        full_path = os.path.join(project_path, file_path)
+        real_project = os.path.realpath(project_path)
+        full_path = os.path.realpath(os.path.join(project_path, file_path))
+        if not full_path.startswith(real_project + os.sep) and full_path != real_project:
+            return f"Error: Path '{file_path}' is outside the project directory."
         if not os.path.exists(full_path):
             return f"Error: File '{file_path}' not found."
         with open(full_path, "r", encoding="utf-8") as file:

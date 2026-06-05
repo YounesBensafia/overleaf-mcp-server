@@ -54,13 +54,13 @@ uv sync
 cp .env.example .env
 # then edit .env with your token/project id
 
-PYTHONPATH=. uv run src/main.py
+uv run overleaf-mcp
 ```
 
 If you are running from an activated virtual environment, you can also use:
 
 ```bash
-PYTHONPATH=. python src/main.py
+python -m src.main
 ```
 
 ## Environment
@@ -95,9 +95,8 @@ Add to `~/.config/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "overleaf": {
       "command": "uv",
-      "args": ["--directory", "/path/to/overleaf-mcp-server", "run", "src/main.py"],
+      "args": ["--directory", "/path/to/overleaf-mcp-server", "run", "overleaf-mcp"],
       "env": {
-        "PYTHONPATH": ".",
         "OVERLEAF_TOKEN": "your_git_token",
         "PROJECT_ID": "your_project_id"
       }

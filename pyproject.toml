@@ -9,3 +9,6 @@ dependencies = [
     "mcp>=1.26.0",
     "python-dotenv>=1.2.2",
 ]
+
+[project.scripts]
+overleaf-mcp = "src.main:main"
