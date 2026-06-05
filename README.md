@@ -42,40 +42,37 @@ sequenceDiagram
   Server-->>Client: success + metadata
 ```
 
-## Quick Start
+## Requirements
 
-```bash
-git clone https://github.com/younesbensafia/overleaf-mcp-server.git
-cd overleaf-mcp-server
+- Python 3.13+
+- `uv` package manager
+- An Overleaf plan with **Git integration** (individual, group, or institution license). Check if your institution provides free access at [Overleaf for Institutions](https://www.overleaf.com/for/institutions-using-overleaf) — use your institutional email. If your institution is not listed, [upgrade your plan](https://www.overleaf.com/user/subscription).
 
-uv sync
+## Git Setup
 
-# Configure environment
-cp .env.example .env
-# then edit .env with your token/project id
-
-uv run overleaf-mcp
-```
-
-If you are running from an activated virtual environment, you can also use:
-
-```bash
-python -m src.main
-```
-
-## Environment
-
-`.env` example:
+1. **Enable Git** — open your project on Overleaf → **Menu** → enable **Git** under Integrations.
+2. **Copy project ID** — from the browser URL (e.g. `https://www.overleaf.com/project/69a4f7cc4eaf13bd56de5b04` → `69a4f7cc4eaf13bd56de5b04`).
+3. **Generate a Git token** — **Account Settings** → **Git integration authentication tokens** → **Generate new token**.
+4. **Configure `.env`** — copy `.env.example` to `.env` and fill in:
 
 ```env
 OVERLEAF_TOKEN=your_git_token
 PROJECT_ID=your_project_id
 ```
 
-Notes:
-- `OVERLEAF_TOKEN` is required.
-- `project_id` can be passed per tool call, or use default `PROJECT_ID`.
-- Overleaf Git access requires a plan that supports Git integration.
+> `project_id` can also be passed per tool call if you leave `PROJECT_ID` unset.
+
+## Quick Start
+
+```bash
+git clone https://github.com/younesbensafia/overleaf-mcp-server.git
+cd overleaf-mcp-server
+uv sync
+cp .env.example .env   # then edit with your token/project id
+uv run python -m src.main
+```
+
+The server listens on stdio — connect your MCP client (Claude Desktop, etc.) to it.
 
 ## Available Tools
 
@@ -95,7 +92,7 @@ Add to `~/.config/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "overleaf": {
       "command": "uv",
-      "args": ["--directory", "/path/to/overleaf-mcp-server", "run", "overleaf-mcp"],
+      "args": ["--directory", "/path/to/overleaf-mcp-server", "run", "python", "-m", "src.main"],
       "env": {
         "OVERLEAF_TOKEN": "your_git_token",
         "PROJECT_ID": "your_project_id"
@@ -107,25 +104,17 @@ Add to `~/.config/Claude/claude_desktop_config.json`:
 
 ## Troubleshooting
 
-- Authentication fails:
-  - Confirm `OVERLEAF_TOKEN` is valid and has Git access.
-  - Re-check your Overleaf subscription supports Git integration.
-- Wrong project content:
+- **403 Forbidden on git operations:**
+  - Your plan doesn't include Git integration — follow the [Git Setup](#git-setup) section.
+  - Or the Git token is wrong — regenerate it at **Account Settings** → **Git integration authentication tokens**.
+- **Wrong project content:**
   - Set the correct `PROJECT_ID` in `.env`.
   - Or pass `project_id` explicitly in tool calls.
-- Sync conflicts:
+- **Sync conflicts:**
   - Run `sync_project` before `write_file` if the remote changed.
-- Server not starting:
+- **Server not starting:**
   - Ensure dependencies are installed with `uv sync`.
   - Verify Python 3.13+ is available.
-
-## Requirements
-
-- Python 3.13+
-- `uv` package manager
-- An Overleaf plan with **Git integration** (individual, group, or institution license). Check if your institution provides free access at [Overleaf for Institutions](https://www.overleaf.com/for/institutions-using-overleaf), use your institutional email to get access. If your institution is not listed, you'll need to [upgrade your plan](https://www.overleaf.com/user/subscription).
-- Once you have Git access: open your project → **Menu** → enable **Git** under Integrations → copy the **project ID** from the URL (e.g. `https://www.overleaf.com/project/69a4f7cc4eaf13bd56de5b04` → `69a4f7cc4eaf13bd56de5b04`) → set it as `PROJECT_ID` in `.env`.
-- Generate a Git token at **Account Settings** → **Git integration authentication tokens** → set it as `OVERLEAF_TOKEN` in `.env`.
 
 ## License
 
