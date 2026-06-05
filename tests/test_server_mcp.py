@@ -24,6 +24,22 @@ class TestMcpServer(unittest.IsolatedAsyncioTestCase):
 
         self.assertIn("Synchronized Overleaf project", result[0].text)
 
+    async def test_call_read_file(self):
+        with patch("src.mcp_server.client.read_file", return_value="file content"):
+            result = await call_tool("read_file", {"file_path": "main.tex", "project_id": "abc123"})
+
+        self.assertEqual(result[0].text, "file content")
+
+    async def test_call_write_file(self):
+        with patch("src.mcp_server.client.write_file", return_value="Updated 'main.tex' and pushed to Overleaf"):
+            result = await call_tool("write_file", {"file_path": "main.tex", "content": "hello", "project_id": "abc123"})
+
+        self.assertIn("pushed to Overleaf", result[0].text)
+
+    async def test_call_unknown_tool_raises(self):
+        with self.assertRaises(ValueError):
+            await call_tool("nonexistent", {})
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -86,31 +86,27 @@ async def list_tools() -> list[types.Tool]:
 async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
     project_id = arguments.get("project_id")
     
-    try:
-        if name == "list_files":
-            files = client.list_files(project_id)
-            return [types.TextContent(type="text", text=json.dumps(files, indent=2))]
-        
-        elif name == "read_file":
-            file_path = arguments["file_path"]
-            content = client.read_file(file_path, project_id)
-            return [types.TextContent(type="text", text=content)]
-        
-        elif name == "write_file":
-            file_path = arguments["file_path"]
-            content = arguments["content"]
-            result = client.write_file(file_path, content, project_id)
-            return [types.TextContent(type="text", text=result)]
-        
-        elif name == "sync_project":
-            project_path = client.ensure_repo(project_id)
-            return [types.TextContent(type="text", text=f"Synchronized Overleaf project at: {project_path}")]
-        
-        else:
-            raise ValueError(f"Unknown tool: {name}")
-            
-    except Exception as e:
-        return [types.TextContent(type="text", text=f"Error: {str(e)}")]
+    if name == "list_files":
+        files = client.list_files(project_id)
+        return [types.TextContent(type="text", text=json.dumps(files, indent=2))]
+    
+    elif name == "read_file":
+        file_path = arguments["file_path"]
+        content = client.read_file(file_path, project_id)
+        return [types.TextContent(type="text", text=content)]
+    
+    elif name == "write_file":
+        file_path = arguments["file_path"]
+        content = arguments["content"]
+        result = client.write_file(file_path, content, project_id)
+        return [types.TextContent(type="text", text=result)]
+    
+    elif name == "sync_project":
+        project_path = client.ensure_repo(project_id)
+        return [types.TextContent(type="text", text=f"Synchronized Overleaf project at: {project_path}")]
+    
+    else:
+        raise ValueError(f"Unknown tool: {name}")
 
 
 async def run_server():
