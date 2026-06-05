@@ -1,7 +1,8 @@
-import asyncio
 import json
-from mcp.server import Server
+
 import mcp.types as types
+from mcp.server import Server
+
 from src.overleaf_client import OverleafClient
 
 client = OverleafClient()
@@ -85,26 +86,27 @@ async def list_tools() -> list[types.Tool]:
 @server.call_tool()
 async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
     project_id = arguments.get("project_id")
-    
+
     if name == "list_files":
         files = client.list_files(project_id)
         return [types.TextContent(type="text", text=json.dumps(files, indent=2))]
-    
+
     elif name == "read_file":
         file_path = arguments["file_path"]
         content = client.read_file(file_path, project_id)
         return [types.TextContent(type="text", text=content)]
-    
+
     elif name == "write_file":
         file_path = arguments["file_path"]
         content = arguments["content"]
         result = client.write_file(file_path, content, project_id)
         return [types.TextContent(type="text", text=result)]
-    
+
     elif name == "sync_project":
         project_path = client.ensure_repo(project_id)
-        return [types.TextContent(type="text", text=f"Synchronized Overleaf project at: {project_path}")]
-    
+        sync_msg = f"Synchronized Overleaf project at: {project_path}"
+        return [types.TextContent(type="text", text=sync_msg)]
+
     else:
         raise ValueError(f"Unknown tool: {name}")
 

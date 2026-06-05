@@ -46,14 +46,14 @@ sequenceDiagram
 
 - Python 3.13+
 - `uv` package manager
-- An Overleaf plan with **Git integration** (individual, group, or institution license). Check if your institution provides free access at [Overleaf for Institutions](https://www.overleaf.com/for/institutions-using-overleaf) — use your institutional email. If your institution is not listed, [upgrade your plan](https://www.overleaf.com/user/subscription).
+- An Overleaf plan with **Git integration** (individual, group, or institution license). Check if your institution provides free access at [Overleaf for Institutions](https://www.overleaf.com/for/institutions-using-overleaf)  - use your institutional email. If your institution is not listed, [upgrade your plan](https://www.overleaf.com/user/subscription).
 
 ## Git Setup
 
-1. **Enable Git** — open your project on Overleaf → **Menu** → enable **Git** under Integrations.
-2. **Copy project ID** — from the browser URL (e.g. `https://www.overleaf.com/project/69a4f7cc4eaf13bd56de5b04` → `69a4f7cc4eaf13bd56de5b04`).
-3. **Generate a Git token** — **Account Settings** → **Git integration authentication tokens** → **Generate new token**.
-4. **Configure `.env`** — copy `.env.example` to `.env` and fill in:
+1. **Enable Git**  - open your project on Overleaf → **Menu** → enable **Git** under Integrations.
+2. **Copy project ID**  - from the browser URL (e.g. `https://www.overleaf.com/project/69a4f7cc4eaf13bd56de5b04` → `69a4f7cc4eaf13bd56de5b04`).
+3. **Generate a Git token**  - **Account Settings** → **Git integration authentication tokens** → **Generate new token**.
+4. **Configure `.env`**  - copy `.env.example` to `.env` and fill in:
 
 ```env
 OVERLEAF_TOKEN=your_git_token
@@ -72,7 +72,7 @@ cp .env.example .env   # then edit with your token/project id
 uv run python -m src.main
 ```
 
-The server listens on stdio — connect your MCP client (Claude Desktop, etc.) to it.
+The server listens on stdio  - connect your MCP client (Claude Desktop, etc.) to it.
 
 ## Available Tools
 
@@ -105,8 +105,8 @@ Add to `~/.config/Claude/claude_desktop_config.json`:
 ## Troubleshooting
 
 - **403 Forbidden on git operations:**
-  - Your plan doesn't include Git integration — follow the [Git Setup](#git-setup) section.
-  - Or the Git token is wrong — regenerate it at **Account Settings** → **Git integration authentication tokens**.
+  - Your plan doesn't include Git integration  - follow the [Git Setup](#git-setup) section.
+  - Or the Git token is wrong  - regenerate it at **Account Settings** → **Git integration authentication tokens**.
 - **Wrong project content:**
   - Set the correct `PROJECT_ID` in `.env`.
   - Or pass `project_id` explicitly in tool calls.

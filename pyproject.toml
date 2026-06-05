@@ -4,11 +4,38 @@ version = "0.1.0"
 description = "MCP server for Overleaf projects via Git sync"
 readme = "README.md"
 requires-python = ">=3.13"
+authors = [{ name = "Younes Bensafia" }]
+keywords = ["overleaf", "mcp", "git", "latex", "sharelatex"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Environment :: Console",
+]
 dependencies = [
     "gitpython>=3.1.46",
     "mcp>=1.26.0",
     "python-dotenv>=1.2.2",
 ]
 
-[project.scripts]
-overleaf-mcp = "src.main:main"
+[project.urls]
+Homepage = "https://github.com/younesbensafia/overleaf-mcp-server"
+Source = "https://github.com/younesbensafia/overleaf-mcp-server"
+Issues = "https://github.com/younesbensafia/overleaf-mcp-server/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+ignore_missing_imports = true
+exclude = [".venv"]

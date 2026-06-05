@@ -31,8 +31,12 @@ class TestMcpServer(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result[0].text, "file content")
 
     async def test_call_write_file(self):
-        with patch("src.mcp_server.client.write_file", return_value="Updated 'main.tex' and pushed to Overleaf"):
-            result = await call_tool("write_file", {"file_path": "main.tex", "content": "hello", "project_id": "abc123"})
+        mock_result = "Updated 'main.tex' and pushed to Overleaf"
+        with patch("src.mcp_server.client.write_file", return_value=mock_result):
+            result = await call_tool(
+                "write_file",
+                {"file_path": "main.tex", "content": "hello", "project_id": "abc123"},
+            )
 
         self.assertIn("pushed to Overleaf", result[0].text)
 
