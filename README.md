@@ -60,7 +60,8 @@ OVERLEAF_TOKEN=your_git_token
 PROJECT_ID=your_project_id
 ```
 
-> `project_id` can also be passed per tool call if you leave `PROJECT_ID` unset.
+> `project_id` can also be passed per tool call, but `PROJECT_ID` is still required
+> by the server configuration.
 
 ## Quick Start
 
@@ -69,7 +70,7 @@ git clone https://github.com/younesbensafia/overleaf-mcp-server.git
 cd overleaf-mcp-server
 uv sync
 cp .env.example .env   # then edit with your token/project id
-uv run python -m src.main
+uv run python -m src.mcp_server
 ```
 
 The server listens on stdio  - connect your MCP client (Claude Desktop, etc.) to it.
@@ -92,7 +93,7 @@ Add to `~/.config/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "overleaf": {
       "command": "uv",
-      "args": ["--directory", "/path/to/overleaf-mcp-server", "run", "python", "-m", "src.main"],
+      "args": ["--directory", "/path/to/overleaf-mcp-server", "run", "python", "-m", "src.mcp_server"],
       "env": {
         "OVERLEAF_TOKEN": "your_git_token",
         "PROJECT_ID": "your_project_id"

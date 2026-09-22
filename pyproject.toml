@@ -6,22 +6,12 @@ readme = "README.md"
 requires-python = ">=3.13"
 authors = [{ name = "Younes Bensafia" }]
 keywords = ["overleaf", "mcp", "git", "latex", "sharelatex"]
-classifiers = [
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.13",
-    "Environment :: Console",
-]
 dependencies = [
     "gitpython>=3.1.46",
     "mcp>=1.26.0",
-    "python-dotenv>=1.2.2",
+    "pydantic>=2.11.0",
+    "pydantic-settings>=2.10.0",
 ]
-
-[project.urls]
-Homepage = "https://github.com/younesbensafia/overleaf-mcp-server"
-Source = "https://github.com/younesbensafia/overleaf-mcp-server"
-Issues = "https://github.com/younesbensafia/overleaf-mcp-server/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -32,10 +22,15 @@ line-length = 100
 extend-exclude = [".venv"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N"]
+select = ["E", "F", "W", "I", "N", "SIM", "ARG"]
 
 [tool.mypy]
 python_version = "3.13"
 strict = true
 ignore_missing_imports = true
 exclude = [".venv"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
