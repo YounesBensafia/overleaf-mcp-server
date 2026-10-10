@@ -26,15 +26,16 @@ def _hold_project_lock(lock_path: str, ready: Any, release: Any) -> None:
 
 
 class TestOverleafClient(unittest.TestCase):
-    @patch("overleaf_mcp.client.os.makedirs")
-    def setUp(self, _):
+    def setUp(self):
         self._git_config_environment = {
             key: os.environ.pop(key) for key in list(os.environ) if key.startswith("GIT_CONFIG_")
         }
         os.environ["GIT_CONFIG_GLOBAL"] = os.devnull
         os.environ["GIT_CONFIG_SYSTEM"] = os.devnull
         self.addCleanup(self._restore_git_config_environment)
-        self.client = OverleafClient(default_project_id=PROJECT_ID)
+        self._repo_dir = TemporaryDirectory()
+        self.addCleanup(self._repo_dir.cleanup)
+        self.client = OverleafClient(repo_dir=self._repo_dir.name, default_project_id=PROJECT_ID)
 
     def _restore_git_config_environment(self) -> None:
         for key in list(os.environ):
