@@ -63,6 +63,23 @@ PROJECT_ID=your_project_id
 > `project_id` can also be passed per tool call, but `PROJECT_ID` is still required
 > by the server configuration.
 
+The Overleaf Git token is account-wide credential material. Store it only in
+the MCP client's environment or a protected `.env` file, and rotate it if it
+is exposed.
+
+## Safety Notes
+
+Files in an Overleaf project are untrusted input. A `.tex` file or project
+configuration can contain instructions aimed at the model; treat file contents
+as data, not as commands. Keep `OVERLEAF_ALLOWED_PROJECTS` restricted to the
+projects the server should be able to access:
+
+```env
+OVERLEAF_ALLOWED_PROJECTS=project_id_a,project_id_b
+```
+
+The default allowlist contains only `PROJECT_ID`.
+
 ## Quick Start
 
 ```bash
@@ -70,10 +87,22 @@ git clone https://github.com/younesbensafia/overleaf-mcp-server.git
 cd overleaf-mcp-server
 uv sync
 cp .env.example .env   # then edit with your token/project id
-uv run python -m src.mcp_server
+uv run overleaf-mcp
 ```
 
+Without a checkout, run the Git version directly with:
+
+```bash
+uvx --from git+https://github.com/younesbensafia/overleaf-mcp-server overleaf-mcp
+```
+
+Plain `uvx overleaf-mcp` is appropriate only after the project is published to
+PyPI.
+
 The server listens on stdio  - connect your MCP client (Claude Desktop, etc.) to it.
+
+For a large project, call `sync_project` first. The initial Git clone can take
+longer than an MCP client's individual tool request timeout.
 
 ## Available Tools
 
@@ -81,8 +110,12 @@ The server listens on stdio  - connect your MCP client (Claude Desktop, etc.) to
 |------|-------------|
 | `list_files` | Pull and list files from Overleaf project |
 | `read_file` | Read file content |
-| `write_file` | Update file, commit, and push to Overleaf |
+| `write_file` | Overwrite a complete text file, commit, and push to Overleaf |
+| `edit_file` | Replace one exact text match, commit, and push to Overleaf |
 | `sync_project` | Force a pull/sync from Overleaf |
+
+`read_file` accepts optional zero-based `offset` and bounded `limit` line
+parameters for reading large documents in chunks.
 
 ## Claude Desktop Setup
 
@@ -93,7 +126,7 @@ Add to `~/.config/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "overleaf": {
       "command": "uv",
-      "args": ["--directory", "/path/to/overleaf-mcp-server", "run", "python", "-m", "src.mcp_server"],
+      "args": ["--directory", "/path/to/overleaf-mcp-server", "run", "overleaf-mcp"],
       "env": {
         "OVERLEAF_TOKEN": "your_git_token",
         "PROJECT_ID": "your_project_id"

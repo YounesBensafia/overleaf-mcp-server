@@ -1,0 +1,4 @@
+MAX_READ_BYTES = 100_000
+MAX_READ_LINES = 10_000
+MAX_WRITE_BYTES = 2_000_000
+IDENTITY = ("Overleaf MCP", "overleaf-mcp@localhost")

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: uv sync --locked
+      - run: uv run ruff check overleaf_mcp tests
+      - run: uv run ruff format --check overleaf_mcp tests
+      - run: uv run mypy overleaf_mcp tests
+      - run: uv run pytest
+      - run: uv build
+      - name: Install and smoke-test wheel
+        shell: bash
+        run: |
+          rm -rf /tmp/overleaf-mcp-wheel-check
+          uv venv --python 3.13 /tmp/overleaf-mcp-wheel-check/.venv
+          uv pip install --python /tmp/overleaf-mcp-wheel-check/.venv/bin/python dist/*.whl
+          unzip -l dist/*.whl
+          printf '%s\n' \
+            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}' \
+            '{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}' \
+            '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
+            | OVERLEAF_TOKEN=ci-test PROJECT_ID=0123456789abcdef01234567 timeout 15 /tmp/overleaf-mcp-wheel-check/.venv/bin/overleaf-mcp \
+            | grep '"id":2'

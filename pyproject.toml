@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "overleaf-mcp-server"
 version = "0.1.0"
@@ -6,12 +10,26 @@ readme = "README.md"
 requires-python = ">=3.13"
 authors = [{ name = "Younes Bensafia" }]
 keywords = ["overleaf", "mcp", "git", "latex", "sharelatex"]
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
     "gitpython>=3.1.46",
-    "mcp>=1.26.0",
+    "filelock>=3.16.0",
+    "mcp>=1.26.0,<2.0.0",
     "pydantic>=2.11.0",
     "pydantic-settings>=2.10.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/younesbensafia/overleaf-mcp-server"
+Repository = "https://github.com/younesbensafia/overleaf-mcp-server"
+Issues = "https://github.com/younesbensafia/overleaf-mcp-server/issues"
+
+[project.scripts]
+overleaf-mcp = "overleaf_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["overleaf_mcp"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -22,15 +40,31 @@ line-length = 100
 extend-exclude = [".venv"]
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "SIM", "ARG"]
+select = ["E", "F", "W", "I", "N", "SIM", "ARG", "B", "UP", "S", "RUF", "ASYNC"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests intentionally use dummy secrets and fixed paths to exercise scrubbing and error handling.
+"tests/**" = ["S101", "S105", "S106", "S108"]
 
 [tool.mypy]
 python_version = "3.13"
 strict = true
-ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
 exclude = [".venv"]
+
+[[tool.mypy.overrides]]
+module = "overleaf_mcp.server"
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_untyped_calls = false
 
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "mypy>=1.13",
+    "ruff",
+    "pytest-asyncio",
 ]
