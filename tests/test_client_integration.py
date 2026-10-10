@@ -1,4 +1,5 @@
 import base64
+import os
 import shutil
 import unittest
 from contextlib import nullcontext
@@ -27,7 +28,19 @@ def _hold_project_lock(lock_path: str, ready: Any, release: Any) -> None:
 class TestOverleafClient(unittest.TestCase):
     @patch("overleaf_mcp.client.os.makedirs")
     def setUp(self, _):
+        self._git_config_environment = {
+            key: os.environ.pop(key) for key in list(os.environ) if key.startswith("GIT_CONFIG_")
+        }
+        os.environ["GIT_CONFIG_GLOBAL"] = os.devnull
+        os.environ["GIT_CONFIG_SYSTEM"] = os.devnull
+        self.addCleanup(self._restore_git_config_environment)
         self.client = OverleafClient(default_project_id=PROJECT_ID)
+
+    def _restore_git_config_environment(self) -> None:
+        for key in list(os.environ):
+            if key.startswith("GIT_CONFIG_"):
+                del os.environ[key]
+        os.environ.update(self._git_config_environment)
 
     def test_project_id_validation(self):
         with self.assertRaises(ValueError):
