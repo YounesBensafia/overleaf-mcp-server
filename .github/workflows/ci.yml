@@ -19,7 +19,11 @@ jobs:
       - run: uv run ruff check overleaf_mcp tests
       - run: uv run ruff format --check overleaf_mcp tests
       - run: uv run mypy overleaf_mcp tests
-      - run: uv run pytest
+      - name: Run tests
+        env:
+          OVERLEAF_TOKEN: ci-test-token
+          PROJECT_ID: 0123456789abcdef01234567
+        run: uv run pytest
       - run: uv build
       - name: Install and smoke-test wheel
         shell: bash

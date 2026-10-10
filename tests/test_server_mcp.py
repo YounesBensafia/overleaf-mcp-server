@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+import os
 import unittest
 from contextlib import redirect_stderr
 from typing import cast
@@ -48,12 +49,13 @@ class TestMcpServer(unittest.IsolatedAsyncioTestCase):
         raise exception
 
     def test_main_reports_missing_fields_to_stderr(self):
-        try:
-            Config(_env_file=None)
-        except ValidationError as error:
-            missing_error = error
-        else:
-            self.fail("Expected a validation error")
+        with patch.dict(os.environ, {}, clear=True):
+            try:
+                Config(_env_file=None)
+            except ValidationError as error:
+                missing_error = error
+            else:
+                self.fail("Expected a validation error")
 
         stderr = io.StringIO()
         with (
