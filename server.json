@@ -1,0 +1,21 @@
+
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.YounesBensafia/overleaf-mcp-server",
+  "description": "MCP server for managing Overleaf projects through Git synchronization.",
+  "repository": {
+    "url": "https://github.com/younesbensafia/overleaf-mcp-server",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "overleaf-mcp-integration",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

@@ -1,7 +1,12 @@
 # Overleaf MCP Server
+<!-- mcp-name: io.github.YounesBensafia/overleaf-mcp-server -->
 
-An MCP server focused only on Overleaf projects (via Overleaf Git sync).
+[![PyPI version](https://img.shields.io/pypi/v/overleaf-mcp-integration)](https://pypi.org/project/overleaf-mcp-integration/)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-Listed-blue)](https://registry.modelcontextprotocol.io/?q=io.github.YounesBensafia%2Foverleaf-mcp-server)
 
+**An MCP server for managing Overleaf projects through Git synchronization.**
+
+[PyPI Package](https://pypi.org/project/overleaf-mcp-integration/) · [MCP Registry](https://registry.modelcontextprotocol.io/?q=io.github.YounesBensafia%2Foverleaf-mcp-server)
 ## What This Server Does
 
 - Connects MCP-compatible clients to your Overleaf project through Git sync.
